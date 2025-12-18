@@ -27,4 +27,4 @@ def update_pie_chart(axis, data):
     plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei'] 
     
     axis.pie(values, labels=labels, autopct='%1.1f%%', startangle=140)
-    axis.set_title("支出分類圓餅圖")
+    axis.set_title("支出圓餅圖")

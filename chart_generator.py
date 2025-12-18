@@ -19,7 +19,6 @@ def update_pie_chart(axis, data):
         amount = float(item['amount'])
         sums[category] = sums.get(category, 0) + amount
 
-    # 繪製圖表
     labels = list(sums.keys())
     values = list(sums.values())
     

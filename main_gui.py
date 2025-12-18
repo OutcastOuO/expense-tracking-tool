@@ -17,6 +17,8 @@ class ExpenseApp:
         # 初始載入圖表
         self.refresh_ui()
     
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
     def refresh_ui(self):
         current_data = [
             {"amount": "350", "category": "食"},
@@ -27,6 +29,11 @@ class ExpenseApp:
         ]
         chart_generator.update_pie_chart(self.axis, current_data)
         self.canvas.draw()
+
+    def on_close(self):
+        """關閉視窗時清理資源並退出程式"""
+        self.root.quit()       # 停止 mainloop
+        self.root.destroy()    # 銷毀視窗，釋放 Tkinter 物件
 
 if __name__ == "__main__":
     root = tk.Tk()

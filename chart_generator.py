@@ -12,7 +12,7 @@ def update_pie_chart(axis, data):
 
     # 設定字體、顏色
     plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei'] 
-    chart_colors = ['#E6BAA3', '#D2B48C', '#FAF0E6', '#BC8F8F', '#A0522D', '#91A088']
+    chart_colors = ['#E6BAA3', '#D2B48C', "#F9E0C7", '#BC8F8F', '#A0522D', '#91A088']
     text_color = "#4B3621"
 
     if not data:

@@ -226,7 +226,7 @@ class ExpenseApp:
         self.day_entry.pack(side=tk.LEFT)
 
         # --- 新增按鈕 ---
-        self.add_btn = tk.Button(inner_container, text="  儲存 ", 
+        self.add_btn = tk.Button(inner_container, text="儲存", 
                                  command=self.handle_submit,
                                  bg="#A0522D", fg="white",
                                  font=("Microsoft JhengHei", 11, "bold"),
@@ -234,6 +234,14 @@ class ExpenseApp:
                                  activebackground="#8B4513", activeforeground="white",
                                  cursor="hand2")
         self.add_btn.pack(side=tk.LEFT, padx=20)
+
+        self.delete_btn = tk.Button(inner_container, text="刪除選定 ", 
+                                    command=self.handle_delete,
+                                    bg="#CD5C5C", fg="white",
+                                    font=("Microsoft JhengHei", 11, "bold"),
+                                    relief="flat", padx=10, pady=3,
+                                    cursor="hand2")
+        self.delete_btn.pack(side=tk.LEFT, padx=10)
 
     def handle_submit(self):
         """收集數據並以字典格式存入 data_storage"""
@@ -265,6 +273,29 @@ class ExpenseApp:
             
         except Exception as e:
             messagebox.showerror("儲存失敗", f"發生錯誤：{e}")    
+
+    def handle_delete(self):
+        # 取得目前 Treeview 選取的項目
+        selected_item = self.tree.selection()
+        
+        if not selected_item:
+            messagebox.showwarning("提示", "請先在上方清單點選要刪除的項目喔")
+            return
+        
+        # 確認刪除
+        if not messagebox.askyesno("確認刪除", "確定要刪除這筆帳目嗎？"):
+            return
+
+        item_index = self.tree.index(selected_item[0])
+
+        try:
+            if data_storage.delete_expense(item_index):
+                messagebox.showinfo("成功", "資料已刪除")
+                self.refresh_ui()
+            else:
+                messagebox.showerror("失敗", "找不到該筆資料")
+        except Exception as e:
+            messagebox.showerror("錯誤", f"刪除時發生錯誤：{e}")
 
     def refresh_ui(self):
         # 清空舊清單

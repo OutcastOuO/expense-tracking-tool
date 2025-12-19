@@ -3,13 +3,14 @@ import os
 
 DB_FILE = 'expenses.json'
 
-def save_expense(name, category, amount, date):
+def save_expense(date, name, category, amount):
     data = load_all_expenses()
     new_item = {
+        "date": date,
         "name": name,
         "category": category,
         "amount": amount,
-        "date": date
+        
     }
     data.append(new_item)
     with open(DB_FILE, 'w', encoding='utf-8') as f:

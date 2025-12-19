@@ -11,10 +11,11 @@ class ExpenseApp:
     def __init__(self, root):
         self.root = root
         self.root.title("記帳工具")
-        
+        self.root.geometry("1200x720")
+
         # input
         input_frame = tk.Frame(root, padx=20, pady=20)
-        input_frame.pack(side=tk.LEFT, fill=tk.Y)
+        input_frame.pack(side=tk.BOTTOM, fill=tk.Y)
 
         tk.Label(input_frame, text="金額:").pack()
         self.amount_entry = tk.Entry(input_frame)
@@ -28,12 +29,42 @@ class ExpenseApp:
         btn.pack(pady=20)
 
         # 圖表
-        self.fig, self.axis = plt.subplots(figsize=(5, 4))
-        self.canvas = FigureCanvasTkAgg(self.fig, master=root)
-        self.canvas.get_tk_widget().pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        self.setup_top_view()
 
         self.refresh_ui()
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    # 上方主容器
+    def setup_top_view(self):
+        self.top_frame = tk.Frame(self.root)
+        self.top_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+        # --- 左側：Treeview 清單 ---
+        self.list_frame = tk.Frame(self.top_frame)
+        self.list_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        columns = ("date", "name", "category", "amount")
+        self.tree = ttk.Treeview(self.list_frame, columns=columns, show='headings')
+        
+        # 定義欄位名稱
+        self.tree.heading("date", text="日期")
+        self.tree.heading("name", text="名稱")
+        self.tree.heading("category", text="類別")
+        self.tree.heading("amount", text="金額")
+        
+        scrollbar = ttk.Scrollbar(self.list_frame, orient=tk.VERTICAL, command=self.tree.yview)
+        self.tree.configure(yscroll=scrollbar.set)
+        
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # --- 右側：圓餅圖 ---
+        self.chart_frame = tk.Frame(self.top_frame, width=450)
+        self.chart_frame.pack(side=tk.RIGHT, fill=tk.BOTH)
+        
+        self.fig, self.axis = plt.subplots(figsize=(5, 5))
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.chart_frame)
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
     def handle_submit(self):
         # 取得資料
@@ -50,9 +81,19 @@ class ExpenseApp:
         self.amount_entry.delete(0, tk.END)
 
     def refresh_ui(self):
-        current_data = data_storage.load_all_expenses()
-        chart_generator.update_pie_chart(self.axis, current_data)
+        # 清空舊清單
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+        
+        # 更新清單
+        data = data_storage.load_all_expenses()
+        for item in data:
+            self.tree.insert("", tk.END, values=(item['date'], item['name'], item['category'], item['amount']))
+        
+        # 更新圓餅圖
+        chart_generator.update_pie_chart(self.axis, data)
         self.canvas.draw()
+
 
     def on_close(self):
         """關閉視窗時清理資源並退出程式"""

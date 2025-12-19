@@ -3,9 +3,16 @@ import os
 
 DB_FILE = 'expenses.json'
 
-def save_expense(expense_dict):
+def save_expense(date, name, category, amount):
     data = load_all_expenses()
-    data.append(expense_dict)
+    new_item = {
+        "date": date,
+        "name": name,
+        "category": category,
+        "amount": amount,
+        
+    }
+    data.append(new_item)
     with open(DB_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 

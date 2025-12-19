@@ -71,6 +71,21 @@ class ExpenseApp:
                   background=[('active', '#C1A37E')],
                   relief=[('active', 'raised'), ('pressed', 'sunken')])
 
+        # --- Scrollbar 樣式優化 ---
+        style.configure("Vertical.TScrollbar",
+                        gripcount=0,
+                        background="#D2B48C",    # 滾動條滑塊 (Thumb) 顏色 - 卡其色
+                        troughcolor="#FDF5E6",   # 滾動條軌道 (Track) 顏色 - 背景米色
+                        bordercolor="#FDF5E6",   # 邊框顏色
+                        lightcolor="#DBC4A7",    # 高光顏色
+                        darkcolor="#DBC4A7",     # 陰影顏色
+                        arrowsize=12)            # 箭頭大小
+
+        # 滑鼠滑過滑塊時變色
+        style.map("Vertical.TScrollbar",
+                  background=[('active', '#BC8F8F')], # 滑過時變玫瑰褐
+                  arrowcolor=[('active', '#4B3621')]) # 箭頭變深咖啡
+
         # --- 左側：Treeview 清單 ---
         columns = ("date", "name", "category", "amount")
         self.tree = ttk.Treeview(self.list_frame, columns=columns, show='headings')

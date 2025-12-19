@@ -11,7 +11,7 @@ class ExpenseApp:
     def __init__(self, root):
         self.root = root
         self.root.title("記帳工具")
-        self.root.geometry("1200x720")
+        self.root.geometry("1400x720")
         self.root.configure(background="#FDF5E6")
         
         # input
@@ -40,8 +40,8 @@ class ExpenseApp:
         self.top_frame = tk.Frame(self.root, background="#FDF5E6")
         self.top_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self.list_frame = tk.Frame(self.top_frame, background="#FDF5E6")
-        self.list_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True) # 移到前面確保順序
+        self.list_frame = tk.Frame(self.top_frame, background="#FDF5E6", width=400)
+        self.list_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         # --- 設定樣式 (Style) ---
         style = ttk.Style()
@@ -67,7 +67,6 @@ class ExpenseApp:
                         darkcolor="#C9AB87",
                         padding=(0, 6))
 
-        # 移除選取標題時的預設藍色高亮，保持溫馨色
         style.map("Treeview.Heading",
                   background=[('active', '#C1A37E')],
                   relief=[('active', 'raised'), ('pressed', 'sunken')])
@@ -81,9 +80,9 @@ class ExpenseApp:
         self.tree.tag_configure('evenrow', background='#FFFDF5')
 
         # 設定欄位屬性
-        self.tree.column("date", width=75, anchor="center")
-        self.tree.column("name", width=110, anchor="center")
-        self.tree.column("category", width=45, anchor="center")
+        self.tree.column("date", width=80, anchor="center")
+        self.tree.column("name", width=120, anchor="center")
+        self.tree.column("category", width=40, anchor="center")
         self.tree.column("amount", width=100, anchor="e")
         
         # 定義欄位名稱
@@ -100,13 +99,24 @@ class ExpenseApp:
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
         # --- 右側：圓餅圖 ---
-        self.chart_frame = tk.Frame(self.top_frame, bg="#FFFDF5", width=600)
-        self.chart_frame.pack(side=tk.RIGHT, fill=tk.BOTH, padx=10)
+        self.chart_outer_frame = tk.Frame(self.top_frame, bg="#FDF5E6", padx=3, pady=3)
+        self.chart_outer_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        # 裝飾性邊框
+        self.chart_frame = tk.LabelFrame(self.chart_outer_frame,  
+                                        font=("Microsoft JhengHei", 13, "bold"),
+                                        fg="#4B3621",
+                                        bg="#FFFDF5",
+                                        relief="flat", 
+                                        padx=5, pady=5)
+        self.chart_frame.pack(fill=tk.BOTH, expand=True)
         
-        self.fig, self.axis = plt.subplots(figsize=(5, 5), facecolor="#FFFDF5")
+        # 建立圓餅圖
+        self.fig, self.axis = plt.subplots(figsize=(4, 4), facecolor="#FFFDF5")
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.chart_frame)
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        self.canvas.get_tk_widget().configure(bg="#FDF5E6")
+        canvas_widget = self.canvas.get_tk_widget()
+        canvas_widget.pack(fill=tk.BOTH, expand=True)
+        canvas_widget.configure(bg="#FFFDF5")
 
     def handle_submit(self):
         # 取得資料

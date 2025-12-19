@@ -1,14 +1,18 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.pyplot as plt
 
 import data_storage
+import chart_generator
 
+# --- 記帳工具 GUI ---
 class ExpenseApp:
     def __init__(self, root):
         self.root = root
         self.root.title("記帳工具")
         self.root.geometry("1400x720")
-        self.root.configure(background="#FDF5E6")
+        self.root.configure(background="#FFF8EE")
 
         style = ttk.Style()
         style.theme_use("clam")
@@ -31,17 +35,127 @@ class ExpenseApp:
                   selectbackground=[("readonly", "#FFF9F0")], 
                   selectforeground=[("readonly", "#4B3621")])
         
-        # input bar
+        # input
         self.setup_input_bar()
+
+        # 圖表
+        self.setup_top_view()
+
+        self.refresh_ui()
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    # 上方主容器
+    def setup_top_view(self):
+        self.top_frame = tk.Frame(self.root, background="#FDF5E6")
+        self.top_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+        self.list_frame = tk.Frame(self.top_frame, background="#FDF5E6", borderwidth=0, highlightthickness=0)
+        self.list_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # --- 設定樣式 (Style) ---
+        style = ttk.Style()
+        style.theme_use("clam") 
+
+        style.configure("Treeview", 
+                        font=("Microsoft JhengHei", 13), 
+                        rowheight=33,
+                        background="#FFFDF5",
+                        fieldbackground="#FFFDF5",
+                        foreground="#4B3621",
+                        relief="flat")
+        style.layout("Treeview", [('Treeview.treearea', {'sticky': 'nswe'})])
+
+        style.map("Treeview", background=[('selected', '#BC8F8F')])
+
+        style.configure("Treeview.Heading", 
+                        font=("Microsoft JhengHei", 16, "bold"),
+                        rowheight=42,
+                        background="#D2B48C", 
+                        foreground="#4B3621",
+                        relief="raised",
+                        bordercolor="#FFFDF5",
+                        lightcolor="#C9AB87",
+                        darkcolor="#C9AB87",
+                        padding=(0, 6))
+
+        style.map("Treeview.Heading",
+                  background=[('active', '#C1A37E')],
+                  relief=[('active', 'raised'), ('pressed', 'sunken')])
+
+        # --- Scrollbar 樣式優化 ---
+        style.configure("Vertical.TScrollbar",
+                        gripcount=0,
+                        background="#D2B48C",
+                        troughcolor="#FDF5E6",
+                        bordercolor="#FDF5E6",
+                        lightcolor="#DBC4A7",
+                        darkcolor="#DBC4A7",
+                        borderwidth=0,
+                        arrowsize=12)
+
+        # 滑鼠滑過滑塊時變色
+        style.map("Vertical.TScrollbar",
+                  background=[('active', '#BC8F8F')],
+                  arrowcolor=[('active', '#4B3621')])
+
+        # --- 左側：Treeview 清單 ---
+        columns = ("date", "name", "category", "amount")
+        self.tree = ttk.Treeview(self.list_frame, 
+                                columns=columns, 
+                                show='headings', 
+                                style="Treeview")
+        
+        # 設定標籤顏色
+        self.tree.tag_configure('oddrow', background="#FAF0E6")
+        self.tree.tag_configure('evenrow', background='#FFFDF5')
+
+        # 設定欄位屬性
+        self.tree.column("date", width=80, anchor="center")
+        self.tree.column("name", width=120, anchor="center")
+        self.tree.column("category", width=40, anchor="center")
+        self.tree.column("amount", width=100, anchor="e")
+        
+        # 定義欄位名稱
+        self.tree.heading("date", text="日期")
+        self.tree.heading("name", text="名稱")
+        self.tree.heading("category", text="類別")
+        self.tree.heading("amount", text="金額")
+
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        # 滾動條樣式
+        scrollbar = ttk.Scrollbar(self.list_frame, orient=tk.VERTICAL, command=self.tree.yview)
+        self.tree.configure(yscroll=scrollbar.set)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # --- 右側：圓餅圖 ---
+        self.chart_outer_frame = tk.Frame(self.top_frame, bg="#FDF5E6", padx=0, pady=0)
+        self.chart_outer_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        # 裝飾性邊框
+        self.chart_frame = tk.LabelFrame(self.chart_outer_frame,  
+                                        font=("Microsoft JhengHei", 13, "bold"),
+                                        fg="#4B3621",
+                                        bg="#FFF8EE",
+                                        relief="flat", 
+                                        padx=2, pady=2)
+        self.chart_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # 建立圓餅圖
+        self.fig, self.axis = plt.subplots(figsize=(4, 4), facecolor="#FFF8EE")
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.chart_frame)
+        canvas_widget = self.canvas.get_tk_widget()
+        canvas_widget.pack(fill=tk.BOTH, expand=True)
+        canvas_widget.configure(bg="#FFFDF5")
 
     def setup_input_bar(self):
         # 欄容器
-        self.bottom_bar = tk.Frame(self.root, pady=0, bg="#FDF5E6")
+        self.bottom_bar = tk.Frame(self.root, pady=5, bg="#FDF5E6")
         self.bottom_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
         # 裝飾性分隔線
-        separator = tk.Frame(self.bottom_bar, height=1, bg="#D2B48C")
-        separator.pack(fill=tk.X, side=tk.TOP, pady=(0, 10))
+        separator = tk.Frame(self.bottom_bar, height=3, bg="#D2B48C")
+        separator.pack(fill=tk.X, side=tk.TOP, pady=(0, 5))
 
         # 內部水平容器
         inner_container = tk.Frame(self.bottom_bar, bg="#FDF5E6")
@@ -141,7 +255,6 @@ class ExpenseApp:
             messagebox.showerror("錯誤", "花費請輸入數字喔")
             return
         
-
         # 執行儲存
         try:
             data_storage.save_expense(date,name, category, amount)
@@ -154,7 +267,26 @@ class ExpenseApp:
             messagebox.showerror("儲存失敗", f"發生錯誤：{e}")    
 
     def refresh_ui(self):
-        pass
+        # 清空舊清單
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+        
+        # 更新清單
+        data = data_storage.load_all_expenses()
+        for i, item in enumerate(data):
+            tag = 'evenrow' if i % 2 == 0 else 'oddrow'
+            self.tree.insert("", tk.END, 
+                            values=(item['date'], item['name'], item['category'], item['amount']),
+                            tags=(tag,))
+        
+        # 更新圓餅圖
+        chart_generator.update_pie_chart(self.axis, data)
+        self.canvas.draw()
+
+    def on_close(self):
+        """關閉視窗時清理資源並退出程式"""
+        self.root.quit()       # 停止 mainloop
+        self.root.destroy()    # 銷毀視窗，釋放 Tkinter 物件
 
 if __name__ == "__main__":
     root = tk.Tk()

@@ -6,13 +6,13 @@ import matplotlib.pyplot as plt
 import data_storage
 import chart_generator
 
-# --- 記帳工具gui ---
+# --- 記帳工具 GUI ---
 class ExpenseApp:
     def __init__(self, root):
         self.root = root
         self.root.title("記帳工具")
         self.root.geometry("1400x720")
-        self.root.configure(background="#FDF5E6")
+        self.root.configure(background="#FFF8EE")
         
         # input
         input_frame = tk.Frame(root, padx=20, pady=20)
@@ -40,7 +40,7 @@ class ExpenseApp:
         self.top_frame = tk.Frame(self.root, background="#FDF5E6")
         self.top_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self.list_frame = tk.Frame(self.top_frame, background="#FDF5E6", width=400)
+        self.list_frame = tk.Frame(self.top_frame, background="#FDF5E6", borderwidth=0, highlightthickness=0)
         self.list_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         # --- 設定樣式 (Style) ---
@@ -52,8 +52,10 @@ class ExpenseApp:
                         rowheight=33,
                         background="#FFFDF5",
                         fieldbackground="#FFFDF5",
-                        foreground="#4B3621")
-        
+                        foreground="#4B3621",
+                        relief="flat")
+        style.layout("Treeview", [('Treeview.treearea', {'sticky': 'nswe'})])
+
         style.map("Treeview", background=[('selected', '#BC8F8F')])
 
         style.configure("Treeview.Heading", 
@@ -74,21 +76,25 @@ class ExpenseApp:
         # --- Scrollbar 樣式優化 ---
         style.configure("Vertical.TScrollbar",
                         gripcount=0,
-                        background="#D2B48C",    # 滾動條滑塊 (Thumb) 顏色 - 卡其色
-                        troughcolor="#FDF5E6",   # 滾動條軌道 (Track) 顏色 - 背景米色
-                        bordercolor="#FDF5E6",   # 邊框顏色
-                        lightcolor="#DBC4A7",    # 高光顏色
-                        darkcolor="#DBC4A7",     # 陰影顏色
-                        arrowsize=12)            # 箭頭大小
+                        background="#D2B48C",
+                        troughcolor="#FDF5E6",
+                        bordercolor="#FDF5E6",
+                        lightcolor="#DBC4A7",
+                        darkcolor="#DBC4A7",
+                        borderwidth=0,
+                        arrowsize=12)
 
         # 滑鼠滑過滑塊時變色
         style.map("Vertical.TScrollbar",
-                  background=[('active', '#BC8F8F')], # 滑過時變玫瑰褐
-                  arrowcolor=[('active', '#4B3621')]) # 箭頭變深咖啡
+                  background=[('active', '#BC8F8F')],
+                  arrowcolor=[('active', '#4B3621')])
 
         # --- 左側：Treeview 清單 ---
         columns = ("date", "name", "category", "amount")
-        self.tree = ttk.Treeview(self.list_frame, columns=columns, show='headings')
+        self.tree = ttk.Treeview(self.list_frame, 
+                                columns=columns, 
+                                show='headings', 
+                                style="Treeview")
         
         # 設定標籤顏色
         self.tree.tag_configure('oddrow', background="#FAF0E6")
@@ -114,20 +120,20 @@ class ExpenseApp:
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
         # --- 右側：圓餅圖 ---
-        self.chart_outer_frame = tk.Frame(self.top_frame, bg="#FDF5E6", padx=3, pady=3)
+        self.chart_outer_frame = tk.Frame(self.top_frame, bg="#FDF5E6", padx=0, pady=0)
         self.chart_outer_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
         # 裝飾性邊框
         self.chart_frame = tk.LabelFrame(self.chart_outer_frame,  
                                         font=("Microsoft JhengHei", 13, "bold"),
                                         fg="#4B3621",
-                                        bg="#FFFDF5",
+                                        bg="#FFF8EE",
                                         relief="flat", 
-                                        padx=5, pady=5)
+                                        padx=2, pady=2)
         self.chart_frame.pack(fill=tk.BOTH, expand=True)
         
         # 建立圓餅圖
-        self.fig, self.axis = plt.subplots(figsize=(4, 4), facecolor="#FFFDF5")
+        self.fig, self.axis = plt.subplots(figsize=(4, 4), facecolor="#FFF8EE")
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.chart_frame)
         canvas_widget = self.canvas.get_tk_widget()
         canvas_widget.pack(fill=tk.BOTH, expand=True)
